@@ -28,15 +28,48 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-
+# GET all members
 @app.route('/members', methods=['GET'])
-def handle_hello():
-    # This is how you can use the Family datastructure by calling its methods
+def get_all_members():
     members = jackson_family.get_all_members()
-    response_body = {"hello": "world",
-                     "family": members}
-    return jsonify(response_body), 200
+    return jsonify(members), 200
 
+# POST (Add) a new member
+@app.route('/members', methods=['POST'])
+def add_new_member():
+    request_body = request.get_json()
+    
+    if request_body is None:
+        return jsonify({"msg": "Missing body"}), 400
+
+    member_added = jackson_family.add_member(request_body)
+    
+    return jsonify(member_added), 200
+    
+# GET a single member by ID
+@app.route('/members/<int:member_id>', methods=['GET'])
+def get_single_member(member_id):
+    member = jackson_family.get_member(member_id)
+    
+    if member:
+        return jsonify(member), 200
+    else:
+        return jsonify({"msg": "Member not found"}), 404
+
+# DELETE a member by ID
+@app.route('/members/<int:member_id>', methods=['DELETE'])
+def delete_member(member_id):
+    member = jackson_family.delete_member(member_id)
+    
+    if member:
+        return jsonify({
+            "done": True,
+        }), 200
+    else:
+        return jsonify({
+            "done": False,
+            "msg": "Member not found"
+        }), 404
 
 
 # This only runs if `$ python src/app.py` is executed
